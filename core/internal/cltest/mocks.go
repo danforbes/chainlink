@@ -429,7 +429,7 @@ func (*SettableClock) After(_ time.Duration) <-chan time.Time {
 // InstantClock an InstantClock
 type InstantClock struct{}
 
-// Now current local time
+// Now returns the current local time
 func (InstantClock) Now() time.Time {
 	return time.Now()
 }
@@ -464,6 +464,11 @@ func (t *TriggerClock) Trigger() {
 	case <-time.After(60 * time.Second):
 		t.t.Error("timed out while trying to trigger clock")
 	}
+}
+
+// Now returns the current local time
+func (t TriggerClock) Now() time.Time {
+	return time.Now()
 }
 
 // After waits on a manual trigger.
