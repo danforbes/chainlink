@@ -22,9 +22,7 @@ func (adapter *Sleep) Perform(input models.RunResult, str *store.Store) models.R
 		<-str.Clock.After(duration)
 	}
 
-	var output models.RunResult
-	output.Status = models.RunStatusCompleted
-	return output
+	return models.RunResultCompleted()
 }
 
 // Duration returns the amount of sleeping this task should be paused for.

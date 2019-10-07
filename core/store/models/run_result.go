@@ -20,6 +20,11 @@ type RunResult struct {
 	ErrorMessage    null.String `json:"error"`
 }
 
+// RunResultCompleted returns a RunResult that has been completed without a value
+func RunResultCompleted() RunResult {
+	return RunResult{Status: RunStatusCompleted}
+}
+
 func RunResultComplete(resultVal interface{}) RunResult {
 	var result RunResult
 	result.CompleteWithResult(resultVal)
