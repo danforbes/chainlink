@@ -358,8 +358,40 @@ function getSAABI(): FunctionFragment['outputs'] {
   const coordinatorFactory = new CoordinatorFactory()
   const { abi } = coordinatorFactory.interface
   const saABI = abi.filter(o => o.name === 'ServiceAgreements')
-  if (!saABI) { throw Error("service agreement abi not found") }
+  if (!saABI) {
+    throw Error('service agreement abi not found')
+  }
+
   return (saABI as any).outputs // XXX: Fix type
 }
 
 type Hash = ReturnType<typeof ethers.utils.keccak256>
+type Coordinator = ReturnType<CoordinatorFactory['attach']>
+type ServiceAgreement = Parameters<Coordinator['initiateServiceAgreement']>[0]
+
+export const calculateSAID2 = ({
+  payment,
+  expiration,
+  endAt,
+  requestDigest,
+  aggregator,
+  aggInitiateJobSelector,
+  aggFulfillSelector,
+}: ServiceAgreement): Hash => {
+  const serviceAgreementIDInput = ethers.utils.defaultAbiCoder.encode(
+    getSAABI(),
+    [
+      payment,
+      expiration,
+      endAt,
+      requestDigest,
+      aggregator,
+      aggInitiateJobSelector,
+      aggFulfillSelector,
+    ],
+  )
+  console.log('serviceAgreementIDInput', serviceAgreementIDInput)
+  return ethers.utils.keccak256(toHex(serviceAgreementIDInput))
+}
+
+//////////////////////////////////////////////////////////////////////////
