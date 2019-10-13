@@ -127,44 +127,43 @@ contract Coordinator is ChainlinkRequestInterface, CoordinatorInterface {
     public
     returns (bytes32 serviceAgreementID)
   {
-    require(
-      _agreement.oracles.length == _signatures.vs.length &&
-      _signatures.vs.length == _signatures.rs.length &&
-      _signatures.rs.length == _signatures.ss.length,
-      "Must pass in as many signatures as oracles"
-    );
-     // solhint-disable-next-line not-rely-on-time
-    require(_agreement.endAt > block.timestamp,
-      "ServiceAgreement must end in the future");
-    require(serviceAgreements[serviceAgreementID].endAt == 0,
-      "serviceAgreement already initiated");
+   require(
+     _agreement.oracles.length == _signatures.vs.length &&
+     _signatures.vs.length == _signatures.rs.length &&
+     _signatures.rs.length == _signatures.ss.length,
+     "Must pass in as many signatures as oracles"
+   );
+    // solhint-disable-next-line not-rely-on-time
+   require(_agreement.endAt > block.timestamp,
+     "ServiceAgreement must end in the future");
+   require(serviceAgreements[serviceAgreementID].endAt == 0,
+     "serviceAgreement already initiated");
+   serviceAgreementID = getId(_agreement);
 
-    serviceAgreementID = getId(_agreement);
+   registerOracleSignatures(
+     serviceAgreementID,
+     _agreement.oracles,
+     _signatures
+   );
 
-    registerOracleSignatures(
-      serviceAgreementID,
-      _agreement.oracles,
-      _signatures
-    );
-
-    serviceAgreements[serviceAgreementID] = _agreement;
-    emit NewServiceAgreement(serviceAgreementID, _agreement.requestDigest);
-    // solhint-disable-next-line avoid-low-level-calls
-    (bool ok, bytes memory response) = _agreement.aggregator.call(
-      abi.encodeWithSelector(
-        _agreement.aggInitiateJobSelector,
-        serviceAgreementID,
-        _agreement
-      )
-    );
-    require(ok, "Aggregator failed to initiate Service Agreement");
-    require(response.length > 0, "probably wrong address/selector");
-    (bool success, bytes memory message) = abi.decode(response, (bool, bytes));
-    if ((!success) && message.length == 0) {
-      // Revert with a non-empty message to give user a hint where to look
-      require(success, "initiation failed; empty message");
-    }
-    require(success, string(message));
+   serviceAgreements[serviceAgreementID] = _agreement;
+   emit NewServiceAgreement(serviceAgreementID, _agreement.requestDigest);
+   // solhint-disable-next-line avoid-low-level-calls
+   (bool ok, bytes memory response) = _agreement.aggregator.call(
+     abi.encodeWithSelector(
+       _agreement.aggInitiateJobSelector,
+       serviceAgreementID,
+       _agreement
+     )
+   );
+   require(ok, "Aggregator failed to initiate Service Agreement");
+   require(response.length > 0, "probably wrong address/selector");
+   (bool success, bytes memory message) = abi.decode(response, (bool, bytes));
+   if ((!success) && message.length == 0) {
+     // Revert with a non-empty message to give user a hint where to look
+     require(success, "initiation failed; empty message"); 
+   }
+   require(success, string(message));
   }
 
   /**
