@@ -41,7 +41,6 @@ async function initiateServiceAgreement({
   normalizedRequest,
   oracleSignature,
 }: Args) {
-  const d = _d.extend('initiateServiceAgreement')
   const provider = createProvider()
   const signer = provider.getSigner(DEVNET_ADDRESS)
   const coordinatorFactory = new CoordinatorFactory(signer)
