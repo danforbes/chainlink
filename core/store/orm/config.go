@@ -289,6 +289,10 @@ func (c Config) ReaperExpiration() time.Duration {
 	return c.viper.GetDuration(EnvVarName("ReaperExpiration"))
 }
 
+func (c Config) IgnoreBeforeHeight() int64 {
+	return c.viper.GetInt64(EnvVarName("IgnoreBeforeHeight"))
+}
+
 // RootDir represents the location on the file system where Chainlink should
 // keep its files.
 func (c Config) RootDir() string {

@@ -85,20 +85,25 @@ func TopicFiltersForRunLog(logTopics []common.Hash, jobID *ID) [][]common.Hash {
 }
 
 // FilterQueryFactory returns the ethereum FilterQuery for this initiator.
-func FilterQueryFactory(i Initiator, from *big.Int) (ethereum.FilterQuery, error) {
+func FilterQueryFactory(i Initiator, nextHead *big.Int) (ethereum.FilterQuery, error) {
 	q := ethereum.FilterQuery{
-		FromBlock: from,
+		FromBlock: nextHead,
 		Addresses: utils.WithoutZeroAddresses([]common.Address{i.Address}),
 	}
 
 	switch i.Type {
 	case InitiatorEthLog:
-		if from == nil {
+		if nextHead == nil {
 			q.FromBlock = i.InitiatorParams.FromBlock.ToInt()
-		} else if from != nil && i.InitiatorParams.FromBlock != nil {
-			q.FromBlock = utils.MaxBigs(from, i.InitiatorParams.FromBlock.ToInt())
+		} else if nextHead != nil && i.InitiatorParams.FromBlock != nil {
+			q.FromBlock = utils.MaxBigs(nextHead, i.InitiatorParams.FromBlock.ToInt())
 		}
 		q.ToBlock = i.InitiatorParams.ToBlock.ToInt()
+
+		if q.FromBlock != nil && q.ToBlock != nil && q.FromBlock.Cmp(q.ToBlock) >= 0 {
+			return q, fmt.Errorf("cannot generate a FilterQuery with fromBlock >= toBlock")
+		}
+
 		q.Topics = i.Topics
 		return q, nil
 
