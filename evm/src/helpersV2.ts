@@ -366,10 +366,11 @@ interface ParamType { name: string, type: string }
  * CoordinatorInterface.sol, so it should silently adapt to changes in the
  * struct, as long as the ethers.js representation is up to date.
  */
-function serviceAgreementFieldTypes(): ParamType[] {
-  // XXX: It would be nice to use CoordinatorFactory().interface.abi, here, but
-  // for some reason it does not include the `oracles` field in the
-  // serviceAgreements return value. Why is that??
+export function serviceAgreementFieldTypes(): ParamType[] {
+  // TODO: Use a function in CoordinatorFactory().interface.abi with a
+  // ServiceAgreement parameter, here. Don't use the output of
+  // serviceAgreements() directly, because abi outputs elide dynamic types (like
+  // `oracles`, in this case.)
   const dummyCoordinatorInterface = CoordinatorInterfaceFactory.connect(
     '0x0000000000000000000000000000000000000000',  // Dummy address & signer
     new (Signer as any /* Brutally instantiates an abstract class */ )()
@@ -406,4 +407,3 @@ export const calculateSAID2 = (sa: ServiceAgreement): Hash => {
   return ethers.utils.solidityKeccak256(typeStrings, inputs)
 }
 
-//////////////////////////////////////////////////////////////////////////
