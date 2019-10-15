@@ -10,7 +10,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/pkg/errors"
 	"github.com/smartcontractkit/chainlink/core/store/assets"
 	"github.com/smartcontractkit/chainlink/core/utils"
@@ -89,6 +91,7 @@ func (sa *ServiceAgreement) SetID(value string) error {
 // Signer is used to produce a HMAC signature from an input digest
 type Signer interface {
 	Sign(input []byte) (Signature, error)
+	Accounts() []accounts.Account
 }
 
 // BuildServiceAgreement builds a signed service agreement
@@ -96,6 +99,26 @@ func BuildServiceAgreement(us UnsignedServiceAgreement, signer Signer) (ServiceA
 	signature, err := signer.Sign(us.ID.Bytes())
 	if err != nil {
 		return ServiceAgreement{}, err
+	}
+	pubKeyRaw, err := crypto.Ecrecover(us.ID.Bytes(), signature.Bytes())
+	if err != nil {
+		panic(err)
+	}
+	pubKey, err := crypto.UnmarshalPubkey(pubKeyRaw)
+	fmt.Printf("pubkey: %x\n", pubKeyRaw)
+	if err != nil {
+		panic(err)
+	}
+	address := crypto.PubkeyToAddress(*pubKey)
+	accountFound := false
+	for _, account := range signer.Accounts() {
+		if address == account.Address {
+			accountFound = true
+			break
+		}
+	}
+	if !accountFound {
+		// XXX panic("failed to find address which seems to have signed the ID")
 	}
 	return ServiceAgreement{
 		ID:          us.ID.String(),
@@ -161,6 +184,8 @@ func NewUnsignedServiceAgreementFromRequest(reader io.Reader) (UnsignedServiceAg
 
 	us.ID, err = generateServiceAgreementID(us.Encumbrance,
 		common.BytesToHash(requestDigest))
+	fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+	fmt.Printf("digest which is signed %x\n", us.ID)
 	if err != nil {
 		return UnsignedServiceAgreement{}, err
 	}

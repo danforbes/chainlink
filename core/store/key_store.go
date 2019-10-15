@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -74,6 +75,8 @@ func (ks *KeyStore) SignTx(account accounts.Account, tx *types.Transaction, chai
 // Sign creates an HMAC from some input data using the account's private key
 func (ks *KeyStore) Sign(input []byte) (models.Signature, error) {
 	account, err := ks.GetFirstAccount()
+	fmt.Printf("Signing with account %x\n", account.Address)
+	fmt.Printf("to be signed: %x\n", input)
 	if err != nil {
 		return models.Signature{}, err
 	}
@@ -88,6 +91,8 @@ func (ks *KeyStore) Sign(input []byte) (models.Signature, error) {
 	}
 	var signature models.Signature
 	signature.SetBytes(output)
+	fmt.Println("signature")
+	spew.Dump(signature)
 	return signature, nil
 }
 
