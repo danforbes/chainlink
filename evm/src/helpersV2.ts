@@ -294,6 +294,15 @@ export async function fulfillOracleRequest(
   )
 }
 
+/**
+ * The solidity function selector for the given signature
+ */
+export function functionSelector(signature: string): string {
+  const fullHash = ethers.utils.id(signature)
+  assert(fullHash.startsWith('0x'))
+  return fullHash.slice(0, 2 + (4 * 2)) // '0x' + initial 4 bytes, in hex
+}
+
 export function requestDataBytes(
   specId: string,
   to: string,
@@ -323,7 +332,7 @@ export function requestDataBytes(
     data,
   ]
   const encoded = ethers.utils.defaultAbiCoder.encode(types, values)
-  const funcSelector = ethers.utils.id(
+  const funcSelector = functionSelector(
     'oracleRequest(address,uint256,bytes32,address,bytes4,uint256,uint256,bytes)',
   )
   return `${funcSelector}${stripHexPrefix(encoded)}`

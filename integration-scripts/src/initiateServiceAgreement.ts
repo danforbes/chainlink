@@ -55,9 +55,19 @@ async function initiateServiceAgreement({
   type OracleSignatures = CoordinatorParams[1]
 
   const fieldTypes = helpers.serviceAgreementFieldTypes().map(f => f.type).join(',')
-  const aggInitiateJobSelector = ethers.utils.id(
-    `initiateJob(bytes32,tuple(${fieldTypes}))`)
-  const aggFulfillSelector = ethers.utils.id('fulfull(bytes32,bytes32,bytes32,bytes32)')
+  const aggInitiateJobSelector = helpers.functionSelector(
+    `initiateJob(bytes32,tuple(${fieldTypes}))`,
+  )
+  if (agreementJson.aggInitiateJobSelector !== aggInitiateJobSelector) {
+    throw Error('Unexpected aggInitiateJobSelector')
+  }
+  // Must be equal because creation of the job on the CL node is done elsewhere
+  const aggFulfillSelector = helpers.functionSelector(
+    'fulfull(bytes32,bytes32,bytes32,bytes32)',
+  )
+  if (agreementJson.aggFulfillSelector !== aggFulfillSelector) {
+    throw Error('Unexpected aggFulfillSelector')
+  }
 
   const agreement: ServiceAgreement = {
     aggFulfillSelector: aggFulfillSelector,
@@ -71,6 +81,8 @@ async function initiateServiceAgreement({
       ethers.utils.toUtf8Bytes(normalizedRequest),
     ),
   }
+
+  console.log('agreement', agreement)
 
   const sig = ethers.utils.splitSignature(oracleSignature)
   if (!sig.v) {
@@ -90,6 +102,8 @@ async function initiateServiceAgreement({
 
   console.log('apparent address', ethers.utils.recoverAddress(said, oracleSignature))
   console.log('actual address', agreement.oracles)
+
+  throw Error('foo')
 
   try {
     provider.on(
