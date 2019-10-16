@@ -197,19 +197,6 @@ func TestJobRun_ApplyResult(t *testing.T) {
 	assert.True(t, jobRun.FinishedAt.Valid)
 }
 
-// XXX: This is infallible
-//func TestJobRun_ApplyResult_ErrorsWhenApplyingToErroredRun(t *testing.T) {
-//t.Parallel()
-
-//job := cltest.NewJobWithWebInitiator()
-//jobRun := job.NewRun(job.Initiators[0])
-//jobRun.Result.Status = models.RunStatusErrored
-
-//result := models.RunResult{}
-//err := jobRun.ApplyResult(result)
-//assert.Error(t, err)
-//}
-
 func TestJobRun_ApplyResult_ErrorSetsFinishedAt(t *testing.T) {
 	t.Parallel()
 
