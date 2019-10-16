@@ -365,6 +365,7 @@ export async function increaseTime5Minutes(
  */
 export function hexToBuf(hexstr: string): Buffer {
   return Buffer.from(stripHexPrefix(hexstr), 'hex')
+}
 
 interface ParamType { name: string, type: string }
 
@@ -400,19 +401,18 @@ type Hash = ReturnType<typeof ethers.utils.keccak256>
 type Coordinator = ReturnType<CoordinatorFactory['attach']>
 type ServiceAgreement = Parameters<Coordinator['initiateServiceAgreement']>[0]
 
-/**
- * Digest of the ServiceAgreement.
- *
- * NB: Changes this function may necessitate changes in tandem to
- * service_agreement.go/Encumberance.ABI, and Coordinator#getId, because this
- * digest is used by oracles to sign the agreement, and used by the coordinator
- * to index the agreement.
- */
-export const calculateSAID2 = (sa: ServiceAgreement): Hash => {
-  const abi = serviceAgreementFieldTypes()
-  type SAKey = keyof ServiceAgreement
-  const typeStrings = abi.map((p:ParamType) => p.type) 
-  const inputs = abi.map((p:ParamType) => sa[p.name as SAKey])
-  return ethers.utils.solidityKeccak256(typeStrings, inputs)
-}
-
+  /**
+   * Digest of the ServiceAgreement.
+   *
+   * NB: Changes this function may necessitate changes in tandem to
+   * service_agreement.go/Encumberance.ABI, and Coordinator#getId, because this
+   * digest is used by oracles to sign the agreement, and used by the coordinator
+   * to index the agreement.
+   */
+  export const calculateSAID2 = (sa: ServiceAgreement): Hash => {
+    const abi = serviceAgreementFieldTypes()
+    type SAKey = keyof ServiceAgreement
+    const typeStrings = abi.map((p:ParamType) => p.type) 
+    const inputs = abi.map((p:ParamType) => sa[p.name as SAKey])
+    return ethers.utils.solidityKeccak256(typeStrings, inputs)
+  }
