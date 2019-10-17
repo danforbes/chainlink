@@ -119,27 +119,30 @@ func NewRun(
 		run.SetError(err)
 	}
 
-	cost := assets.NewLink(0)
-	for i, taskRun := range run.TaskRuns {
-		adapter, err := adapters.For(taskRun.TaskSpec, store)
+	cost := job.MinPayment
+	if cost == nil {
+		cost := assets.NewLink(0)
+		for i, taskRun := range run.TaskRuns {
+			adapter, err := adapters.For(taskRun.TaskSpec, store)
 
-		if err != nil {
-			run.SetError(err)
-			return &run, nil
-		}
+			if err != nil {
+				run.SetError(err)
+				return &run, nil
+			}
 
-		mp := adapter.MinContractPayment()
-		if mp != nil {
-			cost.Add(cost, mp)
-		}
+			mp := adapter.MinContractPayment()
+			if mp != nil {
+				cost.Add(cost, mp)
+			}
 
-		if currentHeight != nil {
-			run.TaskRuns[i].MinimumConfirmations = clnull.Uint32From(
-				utils.MaxUint32(
-					store.Config.MinIncomingConfirmations(),
-					taskRun.TaskSpec.Confirmations.Uint32,
-					adapter.MinConfs()),
-			)
+			if currentHeight != nil {
+				run.TaskRuns[i].MinimumConfirmations = clnull.Uint32From(
+					utils.MaxUint32(
+						store.Config.MinIncomingConfirmations(),
+						taskRun.TaskSpec.Confirmations.Uint32,
+						adapter.MinConfs()),
+				)
+			}
 		}
 	}
 
